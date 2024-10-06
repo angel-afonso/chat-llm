@@ -2,7 +2,9 @@ import Chat from "./pages/chat";
 
 export default function App() {
   return (
-    <Chat />
+    <main>
+      < Chat />
+    </main >
   )
 
 }
