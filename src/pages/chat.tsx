@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from './hooks';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,14 @@ export default function Chat() {
         });
     }, []);
 
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
     return (
         <div className="flex flex-col h-screen text-foreground">
             <div className="flex-grow overflow-hidden">
@@ -42,6 +50,7 @@ export default function Chat() {
                     {messages.map((message, index) => (
                         <MessageItem key={index} message={message} />
                     ))}
+                    <div ref={messagesEndRef} />
                 </ScrollArea>
             </div>
             <div className="p-4 border-t">
