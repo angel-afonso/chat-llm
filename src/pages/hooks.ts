@@ -2,6 +2,9 @@ import { useState, useCallback, useRef } from 'react';
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, UserContent, CoreMessage } from 'ai';
 
+export type Message = CoreMessage & {
+    isLoading?: boolean;
+}
 
 const ollama = createOpenAI({
     apiKey: 'YOUR_API_KEY',
@@ -11,7 +14,7 @@ const ollama = createOpenAI({
 export function useChat() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [messages, setMessages] = useState<CoreMessage[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
     const controllerRef = useRef<AbortController | null>(null);
 
@@ -51,7 +54,6 @@ export function useChat() {
                             reader.readAsDataURL(image);
                         });
 
-
                         content.push({ type: 'image', image: imageDataUrl });
                     }
                 }
@@ -59,18 +61,24 @@ export function useChat() {
                 const userMessage: CoreMessage = {
                     role: 'user',
                     content,
-                }
+                };
 
-                const newState = [...messages, userMessage];
+                setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-                setMessages(newState);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    {
+                        role: 'assistant',
+                        content: '',
+                        isLoading: true,
+                    },
+                ]);
 
                 const res = await streamText({
                     model: ollama('llama3.2:11b'),
-                    messages: newState,
+                    messages: [...messages, userMessage],
                     abortSignal: abortController.signal,
                 });
-
 
                 let assistantContent = '';
 
@@ -83,22 +91,33 @@ export function useChat() {
 
                     setMessages((prevMessages) => {
                         const messages = [...prevMessages];
-                        const lastMessage = messages[messages.length - 1];
+                        const lastMessageIndex = messages.length - 1;
+                        const lastMessage = messages[lastMessageIndex];
 
                         if (lastMessage?.role === 'assistant') {
-                            messages[messages.length - 1] = {
+                            messages[lastMessageIndex] = {
                                 ...lastMessage,
                                 content: assistantContent,
+                                isLoading: true,
                             };
-                        } else {
-                            messages.push({
-                                role: 'assistant',
-                                content: assistantContent,
-                            });
                         }
                         return messages;
                     });
                 }
+
+                setMessages((prevMessages) => {
+                    const messages = [...prevMessages];
+                    const lastMessageIndex = messages.length - 1;
+                    const lastMessage = messages[lastMessageIndex];
+
+                    if (lastMessage?.role === 'assistant') {
+                        messages[lastMessageIndex] = {
+                            ...lastMessage,
+                            isLoading: false,
+                        };
+                    }
+                    return messages;
+                });
             } catch (err: any) {
                 if (err.name === 'AbortError') {
                     console.log('Request aborted');
