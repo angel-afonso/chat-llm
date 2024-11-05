@@ -85,12 +85,12 @@ export default function MessageInput({
 
     return (
         <>
-            <div className="relative flex items-center">
+            <div className="relative flex items-center border rounded-lg">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleImageAttach}
-                    className="absolute left-2 z-10"
+                    // className="absolute left-2 z-10"
                     aria-label="Adjuntar imagen"
                 >
                     <Paperclip className="h-4 w-4" />
@@ -109,7 +109,7 @@ export default function MessageInput({
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Escribe un mensaje..."
                     onKeyUp={handleKeyUp}
-                    className="min-h-[44px] pl-10 pr-12 py-3 max-h-[200px] resize-none rounded-lg focus:ring-1 focus:ring-primary/20"
+                    className="min-h-[44px] px-1 py-3 max-h-[200px] resize-none border-0 outline-none focus:outline-none"
                     style={{ height: 'auto', overflow: 'hidden' }}
                     onInput={(e) => {
                         const target = e.target as HTMLTextAreaElement;
@@ -124,7 +124,7 @@ export default function MessageInput({
                     variant="ghost"
                     size="icon"
                     onClick={!loading ? handleSend : abort}
-                    className="absolute right-2 z-10"
+                    // className="absolute right-2 z-10"
                     aria-label={!loading ? 'Enviar mensaje' : 'Abortar envío'}
                 >
                     {!loading ? (
